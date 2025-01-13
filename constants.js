@@ -1,0 +1,58 @@
+export const defaultTextureURL = "https://images.unsplash.com/photo-1499428665502-503f6c608263?q=80&w=2400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
+export const controls = [
+  {
+    id: "basePixels",
+    label: "Résolution",
+    min: 5,
+    max: 50,
+    value: 20,
+    step: 1,
+    group: "pixelisation",
+  },
+  {
+    id: "dynamicRange",
+    label: "Animation",
+    min: 0,
+    max: 1,
+    value: 0.2,
+    step: 0.05,
+    group: "pixelisation",
+  },
+  {
+    id: "noiseStrength",
+    label: "Bruit",
+    min: 0,
+    max: 0.2,
+    value: 0.05,
+    step: 0.01,
+    group: "effets",
+  },
+  {
+    id: "displacement",
+    label: "Déformation",
+    min: 0,
+    max: 0.1,
+    value: 0.02,
+    step: 0.01,
+    group: "effets",
+  },
+  {
+    id: "colorBoost",
+    label: "Contraste",
+    min: 0,
+    max: 1,
+    value: 0.2,
+    step: 0.05,
+    group: "effets",
+  },
+  {
+    id: "timeSpeed",
+    label: "Vitesse",
+    min: 0,
+    max: 0.05,
+    value: 0.01,
+    step: 0.001,
+    group: "animation",
+  },
+];
