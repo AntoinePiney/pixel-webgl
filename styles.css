@@ -20,6 +20,7 @@ body {
   height: 100vh;
   position: relative;
   overflow: hidden;
+  background-color: #ffffff;
 }
 
 #controls {
@@ -40,8 +41,6 @@ body {
   font-weight: 600;
   margin: 0 0 16px 0;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .control-row {
@@ -88,7 +87,67 @@ canvas {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  max-width: 100%;
-  max-height: 100%;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 80%;
+  max-height: 80%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles pour le conteneur de l'input file */
+#file-input-container {
+  position: absolute; /* Changé de fixed à absolute */
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  color: #333;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#file-input-container::before {
+  content: "📸";
+  font-size: 18px;
+}
+
+#file-input-container:hover {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transform: translateX(-50%) translateY(-2px);
+}
+
+#file-input-container.drag-over {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transform: translateX(-50%) scale(1.05);
+}
+
+/* Cache l'input file natif */
+#file-input {
+  display: none;
+}
+
+/* Style pour le message de drag & drop */
+#file-input-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px dashed #666;
+  border-radius: 30px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#file-input-container.drag-over::after {
+  opacity: 1;
 }
