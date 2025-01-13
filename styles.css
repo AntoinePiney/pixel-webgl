@@ -1,0 +1,94 @@
+:root {
+  --bg-color: #18181b;
+  --control-bg: #27272a;
+  --text-primary: #fafafa;
+  --text-secondary: #71717a;
+  --accent: #ffffff;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  background: var(--bg-color);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+#container {
+  flex: 1;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+#controls {
+  width: 280px;
+  height: 100vh;
+  padding: 24px;
+  background: var(--control-bg);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.control-group {
+  margin-bottom: 32px;
+}
+
+.control-group h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.control-row {
+  margin-bottom: 16px;
+}
+
+.control-row label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.control-row input[type="range"] {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-color);
+  border-radius: 2px;
+  appearance: none;
+  margin-bottom: 8px;
+}
+
+.control-row input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.control-row input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.value {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90%;
+  max-height: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
