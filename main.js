@@ -1,7 +1,8 @@
+// Constantes globales
+const defaultTextureURL =
+  "https://images.unsplash.com/photo-1499428665502-503f6c608263?q=80&w=2400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
 // Shaders
-
-let defaultTexture;
-
 const shaders = {
   vertexShader: `
     varying vec2 vUv;
@@ -10,7 +11,6 @@ const shaders = {
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
   `,
-
   fragmentShader: `
     uniform sampler2D uTexture;
     uniform float uTime;
@@ -47,16 +47,12 @@ const shaders = {
     vec2 coverUV(vec2 uv, vec2 contentAspect, vec2 containerAspect) {
       float containerRatio = containerAspect.x / containerAspect.y;
       float contentRatio = contentAspect.x / contentAspect.y;
-      
-      vec2 scale = vec2(1.0);
-      if (containerRatio > contentRatio) {
-        scale = vec2(containerRatio / contentRatio, 1.0);
-      } else {
-        scale = vec2(1.0, contentRatio / containerRatio);
-      }
-      
-      vec2 scaledUV = (uv - 0.5) * scale + 0.5;
-      return scaledUV;
+
+      vec2 scale = containerRatio > contentRatio
+        ? vec2(containerRatio / contentRatio, 1.0)
+        : vec2(1.0, contentRatio / containerRatio);
+
+      return (uv - 0.5) * scale + 0.5;
     }
 
     void main() {
@@ -64,38 +60,37 @@ const shaders = {
       vec2 adjustedUV = coverUV(vUv, uImageAspect, containerAspect);
       
       float dist = distance(adjustedUV, uMouse);
-      
+
       float time = uTime * 0.5;
       float dynamicPixels = uBasePixels * (1.0 + sin(time) * uDynamicRange);
       float finalPixels = mix(uBasePixels, dynamicPixels, smoothstep(0.5, 0.0, dist) * uHover);
-      
+
       vec2 displacement = vec2(
         noise(adjustedUV * 3.0 + time) * uDisplacement,
         noise(adjustedUV * 3.0 + time + 1.0) * uDisplacement
       ) * uHover;
-      
+
       vec2 distortedUV = adjustedUV + displacement;
       vec2 pixelatedUV = mix(
         distortedUV,
         pixelate(distortedUV, finalPixels),
         smoothstep(0.5, 0.0, dist) * uHover
       );
-      
-      // Check if UV coordinates are outside the valid range
+
       if (pixelatedUV.x < 0.0 || pixelatedUV.x > 1.0 || 
           pixelatedUV.y < 0.0 || pixelatedUV.y > 1.0) {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
       }
-      
+
       vec4 color = texture2D(uTexture, pixelatedUV);
-      
+
       float boost = smoothstep(0.5, 0.0, dist) * uHover * uColorBoost;
       color.rgb = mix(color.rgb, color.rgb * 1.2, boost);
-      
+
       float vignette = 1.0 - smoothstep(0.5, 1.5, length(adjustedUV - 0.5) * 2.0);
       color.rgb *= mix(1.0, vignette, uVignette);
-      
+
       gl_FragColor = color;
     }
   `,
@@ -157,8 +152,7 @@ const controls = [
     group: "animation",
   },
 ];
-
-// Configuration des contrôles
+// Crée et configure les contrôles
 function setupControls(uniforms) {
   const container = document.getElementById("controls");
 
@@ -171,57 +165,63 @@ function setupControls(uniforms) {
   container.innerHTML = Object.entries(groups)
     .map(
       ([group, groupControls]) => `
-      <div class="control-group">
-        <h3>${group.charAt(0).toUpperCase()}${group.slice(1)}</h3>
-        ${groupControls
-          .map(
-            (control) => `
-          <div class="control-row">
-            <label for="${control.id}">${control.label}</label>
-            <input type="range" 
-              id="${control.id}"
-              min="${control.min}"
-              max="${control.max}"
-              value="${control.value}"
-              step="${control.step}">
-            <span class="value" id="${control.id}-value">${control.value}</span>
-          </div>
-        `
-          )
-          .join("")}
-      </div>
-    `
+        <div class="control-group">
+          <h3>${capitalize(group)}</h3>
+          ${groupControls
+            .map(
+              (control) => `
+                <div class="control-row">
+                  <label for="${control.id}">${control.label}</label>
+                  <input type="range" id="${control.id}" min="${control.min}" max="${control.max}" value="${control.value}" step="${control.step}">
+                  <span class="value" id="${control.id}-value">${control.value}</span>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+      `
     )
     .join("");
 
-  // Configuration des écouteurs d'événements pour les contrôles
-  controls.forEach((control) => {
-    const input = document.getElementById(control.id);
-    const value = document.getElementById(`${control.id}-value`);
+  controls.forEach(({ id, value }) => {
+    const input = document.getElementById(id);
+    const display = document.getElementById(`${id}-value`);
 
     input.addEventListener("input", () => {
       const numValue = parseFloat(input.value);
-      value.textContent = numValue.toFixed(2);
-      uniforms[
-        `u${control.id.charAt(0).toUpperCase()}${control.id.slice(1)}`
-      ].value = numValue;
+      display.textContent = numValue.toFixed(2);
+      uniforms[`u${capitalize(id)}`].value = numValue;
     });
   });
 }
 
-// Fonction d'animation
+// Fonction de capitalisation
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Fonction principale de l'animation
 function animate(scene, camera, renderer, uniforms) {
-  requestAnimationFrame(() => animate(scene, camera, renderer, uniforms));
-  uniforms.uTime.value += parseFloat(
-    document.getElementById("timeSpeed").value
-  );
-  renderer.render(scene, camera);
+  const updateTime = () => {
+    uniforms.uTime.value += parseFloat(
+      document.getElementById("timeSpeed").value
+    );
+    renderer.render(scene, camera);
+    requestAnimationFrame(updateTime);
+  };
+  updateTime();
 }
 
 // Configuration initiale de la scène et des contrôles
 function setupScene() {
   const container = document.getElementById("container");
 
+  // Crée un wrapper pour le canvas
+  const canvasWrapper = document.createElement("div");
+  canvasWrapper.id = "canvasWrapper";
+  container.appendChild(canvasWrapper);
+
+  // Ajout du champ pour charger une image
   const fileInputContainer = document.createElement("div");
   fileInputContainer.id = "file-input-container";
   fileInputContainer.textContent = "Choisir une image";
@@ -236,13 +236,14 @@ function setupScene() {
 
   fileInputContainer.addEventListener("click", () => fileInput.click());
 
+  // Crée le renderer et associe le canvas au wrapper
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(canvasWrapper.clientWidth, canvasWrapper.clientHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  canvasWrapper.appendChild(renderer.domElement);
+
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  container.appendChild(renderer.domElement);
 
   const textureLoader = new THREE.TextureLoader();
   const uniforms = {
@@ -257,7 +258,10 @@ function setupScene() {
     uColorBoost: { value: 0.2 },
     uVignette: { value: 0.3 },
     uResolution: {
-      value: new THREE.Vector2(container.clientWidth, container.clientHeight),
+      value: new THREE.Vector2(
+        canvasWrapper.clientWidth,
+        canvasWrapper.clientHeight
+      ),
     },
     uImageAspect: { value: new THREE.Vector2(1, 1) },
   };
@@ -269,7 +273,6 @@ function setupScene() {
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
       uniforms.uTexture.value = texture;
-      defaultTexture = texture;
 
       const img = texture.image;
       updateImageAspect(img, uniforms);
@@ -313,17 +316,17 @@ function setupScene() {
     }
   });
 
-  // Interaction de la souris
+  // Interaction de la souris sur le canvasWrapper
   let targetMouse = { x: 0.5, y: 0.5 };
   let currentMouse = { x: 0.5, y: 0.5 };
   let isHovering = false;
 
-  container.addEventListener("mouseenter", () => (isHovering = true));
-  container.addEventListener("mouseleave", () => (isHovering = false));
-  container.addEventListener("mousemove", (e) => {
-    const rect = container.getBoundingClientRect();
-    targetMouse.x = (e.clientX - rect.left) / container.clientWidth;
-    targetMouse.y = 1 - (e.clientY - rect.top) / container.clientHeight;
+  canvasWrapper.addEventListener("mouseenter", () => (isHovering = true));
+  canvasWrapper.addEventListener("mouseleave", () => (isHovering = false));
+  canvasWrapper.addEventListener("mousemove", (e) => {
+    const rect = canvasWrapper.getBoundingClientRect();
+    targetMouse.x = (e.clientX - rect.left) / rect.width;
+    targetMouse.y = 1 - (e.clientY - rect.top) / rect.height;
   });
 
   function updateMouse() {
@@ -337,10 +340,10 @@ function setupScene() {
 
   updateMouse();
 
-  // Gestion du redimensionnement de la fenêtre
+  // Gestion du redimensionnement
   window.addEventListener("resize", () => {
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const width = canvasWrapper.clientWidth;
+    const height = canvasWrapper.clientHeight;
     renderer.setSize(width, height);
     uniforms.uResolution.value.set(width, height);
   });
@@ -349,6 +352,7 @@ function setupScene() {
 }
 
 // Initialisation
+// Initialisation du document
 document.addEventListener("DOMContentLoaded", () => {
   const { scene, camera, renderer, uniforms } = setupScene();
   setupControls(uniforms);
