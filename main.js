@@ -88,7 +88,7 @@ const shaders = {
   `,
 };
 
-// Controls configuration
+// Configuration des contrôles
 const controls = [
   {
     id: "basePixels",
@@ -146,11 +146,10 @@ const controls = [
   },
 ];
 
-// Setup scene
+// Configuration initiale de la scène et des contrôles
 function setupScene() {
   const container = document.getElementById("container");
 
-  // Add file input with custom styling
   const fileInputContainer = document.createElement("div");
   fileInputContainer.id = "file-input-container";
   fileInputContainer.textContent = "Choisir une image";
@@ -176,7 +175,6 @@ function setupScene() {
   const texture = new THREE.TextureLoader().load(
     "https://images.unsplash.com/photo-1499428665502-503f6c608263?q=80&w=2400&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   );
-
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
 
@@ -204,7 +202,7 @@ function setupScene() {
   const mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
 
-  // Handle file input
+  // Gestion de l'entrée de fichier
   fileInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -225,7 +223,7 @@ function setupScene() {
     }
   });
 
-  // Mouse interaction
+  // Interaction de la souris
   let targetMouse = { x: 0.5, y: 0.5 };
   let currentMouse = { x: 0.5, y: 0.5 };
   let isHovering = false;
@@ -249,15 +247,19 @@ function setupScene() {
 
   updateMouse();
 
-  // Resize handler
+  // Gestion du redimensionnement de la fenêtre
   window.addEventListener("resize", () => {
     renderer.setSize(container.clientWidth, container.clientHeight);
+    uniforms.uResolution.value.set(
+      container.clientWidth,
+      container.clientHeight
+    );
   });
 
   return { scene, camera, renderer, uniforms };
 }
 
-// Setup controls
+// Configuration des contrôles
 function setupControls(uniforms) {
   const container = document.getElementById("controls");
 
@@ -293,7 +295,7 @@ function setupControls(uniforms) {
     )
     .join("");
 
-  // Setup event listeners
+  // Configuration des écouteurs d'événements pour les contrôles
   controls.forEach((control) => {
     const input = document.getElementById(control.id);
     const value = document.getElementById(`${control.id}-value`);
@@ -308,7 +310,7 @@ function setupControls(uniforms) {
   });
 }
 
-// Animation loop
+// Boucle d'animation
 function animate(scene, camera, renderer, uniforms) {
   requestAnimationFrame(() => animate(scene, camera, renderer, uniforms));
   uniforms.uTime.value += parseFloat(
@@ -317,7 +319,7 @@ function animate(scene, camera, renderer, uniforms) {
   renderer.render(scene, camera);
 }
 
-// Initialize everything
+// Initialisation
 document.addEventListener("DOMContentLoaded", () => {
   const { scene, camera, renderer, uniforms } = setupScene();
   setupControls(uniforms);
