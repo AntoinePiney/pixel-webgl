@@ -147,7 +147,7 @@ canvas {
   z-index: 10000;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 824px) {
   #mobile-warning {
     display: flex; /* Afficher seulement sur petits écrans */
   }
